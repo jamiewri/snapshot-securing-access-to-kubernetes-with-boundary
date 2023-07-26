@@ -170,6 +170,19 @@ sh demo.sh boundary-config-apply
 </details>
 
 ## Operations
+<details> 
+  <summary><b>Accessing Vault and Boundarys UI</b></summary>
+
+---
+```
+kubectl -n infra get svc
+NAME                           TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+boundary-controller-external   LoadBalancer   10.244.5.138    <external-ip>   80:30126/TCP                 44m
+boundary-worker-external       LoadBalancer   10.244.15.157   <external-ip>   80:30668/TCP                 44m
+vault-external                 LoadBalancer   10.244.13.132   <external-ip>   80:31234/TCP                 44m
+```
+
+</details>
 
 <details> 
   <summary><b>Default Usernames and Passwords</b></summary>
