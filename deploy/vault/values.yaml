@@ -1,0 +1,25 @@
+global:
+  enabled: true
+  tlsDisable: true
+
+injector:
+  enabled: true
+
+server:
+  image:
+    repository: "hashicorp/vault"
+    tag: "1.14.0"
+
+  serviceAccount:
+    name: "vault-token-reviewer"
+
+  affinity: {}
+
+  readinessProbe:
+    enabled: false
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+    initialDelaySeconds: 60
+
+  dev:
+    enabled: true
+    devRootToken: "Hash!123"

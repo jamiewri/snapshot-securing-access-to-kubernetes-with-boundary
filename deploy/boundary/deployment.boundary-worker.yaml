@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boundary-worker
+  template:
+    metadata:
+      labels:
+        app: boundary-worker
+    spec:
+      initContainers:
+      - name: init
+        image: alpine:3
+        command:
+        - chmod
+        - "777"
+        - /boundary-auth
+        volumeMounts:
+        - name: boundary-worker-auth
+          mountPath: "/boundary-auth"
+      - name: init-2
+        image: alpine:3
+        command:
+        - chown
+        - -R
+        - 100:100
+        - /boundary-auth
+        volumeMounts:
+        - name: boundary-worker-auth
+          mountPath: "/boundary-auth"
+      securityContext:
+        fsGroup: 100
+      containers:
+      - name: boundary-worker
+        image: "hashicorp/boundary-enterprise:0.13.0-ent"
+        args: [ "server", "-config", "/boundary/config.hcl"]
+        env:
+        - name: BOUNDARY_WORKER_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: boundary-worker-addr
+              key: boundary-worker-addr
+        ports:
+        - containerPort: 9202
+        securityContext:
+          privileged: true
+          capabilities:
+            add: [ "IPC_LOCK" ]
+        volumeMounts:
+        - name: boundary-worker-auth
+          mountPath: "/boundary-auth"
+        - name: boundary-config
+          mountPath: /boundary/config.hcl
+          subPath: config.hcl
+        - name: boundary-cache
+          mountPath: "/boundary-cache"
+      volumes:
+      - name: boundary-config
+        configMap:
+          name: boundary-worker
+      - name: boundary-worker-auth
+        persistentVolumeClaim:
+          claimName: boundary-worker-auth
+      - name: boundary-cache
+        emptyDir: {}

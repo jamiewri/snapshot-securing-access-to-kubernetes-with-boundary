@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boundary-controller
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: boundary-controller
+    spec:
+      serviceAccountName: boundary-controller
+      initContainers:
+        - name: boundary-init
+          image: "hashicorp/boundary-enterprise:0.13.0-ent"
+          command:
+            - /bin/sh
+            - "-c"
+          args:
+            - boundary database migrate -config /boundary/boundary-config-admin.hcl || boundary database init -skip-auth-method-creation -skip-host-resources-creation -skip-scopes-creation -skip-target-creation -config /boundary/boundary-config-admin.hcl || true
+          env:
+            - name: HOSTNAME
+              value: boundary
+            - name: "BOUNDARY_LICENSE"
+              valueFrom:
+                secretKeyRef:
+                  name: boundary-license
+                  key: boundary-license
+          volumeMounts:
+            - name: boundary-config
+              mountPath: /boundary
+              readOnly: true
+      containers:
+        - name: boundary
+          command:
+            - /bin/sh
+            - "-c"
+          args:
+            - boundary server -config /boundary/boundary-config.hcl -log-level=trace
+          env:
+            - name: HOSTNAME
+              value: boundary
+            - name: "BOUNDARY_LICENSE"
+              valueFrom:
+                secretKeyRef:
+                  name: boundary-license
+                  key: boundary-license
+          volumeMounts:
+            - name: boundary-config
+              mountPath: /boundary
+              readOnly: true
+            - name: session-recording
+              mountPath: /tmp
+          securityContext:
+            {}
+          image: "hashicorp/boundary-enterprise:0.13.0-ent"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 9200
+              protocol: TCP
+            - name: cluster
+              containerPort: 9201
+              protocol: TCP
+            - name: data
+              containerPort: 9202
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: api
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+          resources:
+            {}
+      volumes:
+        - name: boundary-config
+          configMap:
+            name: boundary-controller
+        - name: session-recording
+          emptyDir: {}
+

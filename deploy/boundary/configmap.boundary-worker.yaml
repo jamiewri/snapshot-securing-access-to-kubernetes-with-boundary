@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boundary-worker
+data:
+  config.hcl: |
+    disable_mlock = true
+    log_format    = "standard"
+
+    # listener of type proxy defaults to port 9202
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "proxy"
+      tls_disable = true
+    }
+
+    worker {
+      # Set to the public IP address for the extnernal loadbalancer
+      # that resolves to the worker
+      public_addr = "env://BOUNDARY_WORKER_ADDR"
+
+      # Mounted as a PVC so that if the pod restarts the worker can 
+      # re-authenticate back to the controller
+      auth_storage_path="/boundary-auth"
+
+      # Mounted as a emptyDir for local cache before pushing to s3
+      recording_storage_path="/boundary-cache"
+
+      # Location of the boundary controller
+      # Using Kubernetes Service for DNS
+      # Defaults to port 9201
+      initial_upstreams = ["boundary-controller-internal:9201"]
+
+      tags {
+         session_recording = ["true"]
+      }
+    }
+
+    kms "aead" {
+      purpose = "worker-auth-storage"
+      aead_type = "aes-gcm"
+      key_id = "worker-auth-storage"
+      key = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }

@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boundary-controller
+data:
+  boundary-config-admin.hcl: |
+    disable_mlock = true
+    log_format    = "standard"
+    controller {
+      name        = "kubernetes-controller"
+      description = "Boundary controller"
+      database {
+        url = "postgresql://postgres:Hash!123@postgres-postgresql:5432/boundary?sslmode=disable"
+      }
+      public_cluster_addr = "boundary-controller-internal"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "api"
+      tls_disable = true
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "cluster"
+      tls_disable = true
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "proxy"
+      tls_disable = true
+    }
+
+    kms "aead" {
+      purpose = "root"
+      key_id = "global_root"
+      aead_type = "aes-gcm"
+      key = "D0vmvzf8l+C709nVfEH3hgBCj6IF/1eb9kCTYTtnDVc="
+    }
+
+    kms "aead" {
+      purpose = "recovery"
+      key_id = "global_recovery"
+      aead_type = "aes-gcm"
+      key = "Ivj8Si8UQBp+Zm2lLbUDTxOGikE8rSo6QihCjWSTXqY="
+    }
+
+    kms "aead" {
+      purpose = "worker-auth"
+      key_id = "global_worker-auth"
+      aead_type = "aes-gcm"
+      key = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
+
+    kms "aead" {
+      purpose = "bsr"
+      key_id = "global_bsr"
+      aead_type = "aes-gcm"
+      key = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
+  boundary-config.hcl: |
+    disable_mlock = true
+    log_format    = "standard"
+    controller {
+      name        = "kubernetes-controller"
+      description = "Boundary controller"
+      database {
+        url = "postgresql://postgres:Hash!123@postgres-postgresql:5432/boundary?sslmode=disable"
+      }
+      public_cluster_addr = "boundary-controller-internal"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "api"
+      tls_disable = true
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "cluster"
+      tls_disable = true
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0"
+      purpose     = "proxy"
+      tls_disable = true
+    }
+
+    kms "aead" {
+      purpose = "root"
+      key_id = "global_root"
+      aead_type = "aes-gcm"
+      key = "D0vmvzf8l+C709nVfEH3hgBCj6IF/1eb9kCTYTtnDVc="
+    }
+
+    kms "aead" {
+      purpose = "recovery"
+      key_id = "global_recovery"
+      aead_type = "aes-gcm"
+      key = "Ivj8Si8UQBp+Zm2lLbUDTxOGikE8rSo6QihCjWSTXqY="
+    }
+
+    kms "aead" {
+      purpose = "worker-auth"
+      key_id = "global_worker-auth"
+      aead_type = "aes-gcm"
+      key = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
+
+    kms "aead" {
+      purpose = "bsr"
+      key_id = "global_bsr"
+      aead_type = "aes-gcm"
+      key = "8Aj2j2JpFmY1WdjKcmETyYwUi7njP74MLVXWNov4rZ8="
+    }
