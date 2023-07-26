@@ -5,6 +5,7 @@
 ## Summary
 This repo deploys Boundary and Vault into a GKE Kubernetes cluster and configures them to demonstrate an example workflow where by a developer uses Boundary to request Just-In-Time access to their application namespace.
 
+A Youtube video of me presenting this demo is available [here](https://www.youtube.com/watch?v=69UFSAIDQgM).
 
 
 ## Prerequisites
